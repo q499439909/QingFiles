@@ -9,6 +9,27 @@ private final class PaneContainerView: NSView {
     }
 }
 
+/// Native breadcrumb tracking with an explicit text-editing entry on unused space.
+private final class BreadcrumbPathControl: NSPathControl {
+    var onEdit: (() -> Void)?
+    var onOverflow: (() -> Void)?
+
+    override func mouseDown(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        if let pathCell = cell as? NSPathCell {
+            guard let component = pathCell.pathComponentCell(at: point, withFrame: bounds, in: self) else {
+                onEdit?()
+                return
+            }
+            if component.url == nil {
+                onOverflow?()
+                return
+            }
+        }
+        super.mouseDown(with: event)
+    }
+}
+
 private final class FileListTable: NSTableView {
     weak var pane: FilePane?
 
@@ -93,6 +114,12 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
     private let table = FileListTable()
     private let folderLabel = NSTextField(labelWithString: "")
     private let pathField = NSTextField(string: "")
+    private let breadcrumbControl = BreadcrumbPathControl()
+    private let pathPresentation = NSStackView()
+    private var pathEditing = false
+    private var breadcrumbWidth: CGFloat = -1
+    private var breadcrumbDirectory: String?
+    private var overflowLocations: [URL] = []
     private let searchField = NSSearchField()
     private let pathContent = NSStackView()
     private var searchButton: NSButton!
@@ -158,8 +185,6 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
         pathField.bezelStyle = .roundedBezel
         pathField.focusRingType = .none
         pathField.placeholderString = "Enter a path, e.g. / or ~/Documents"
-        pathField.target = self
-        pathField.action = #selector(pathSubmitted)
         pathField.delegate = self
         pathField.toolTip = "Enter a path and press Return; ~ represents your home folder"
 
@@ -177,8 +202,29 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
         pathContent.orientation = .horizontal
         pathContent.spacing = 6
         pathContent.detachesHiddenViews = true
+        breadcrumbControl.pathStyle = .standard
+        breadcrumbControl.controlSize = .small
+        breadcrumbControl.isEditable = false
+        breadcrumbControl.backgroundColor = .clear
+        breadcrumbControl.target = self
+        breadcrumbControl.action = #selector(breadcrumbClicked)
+        breadcrumbControl.onEdit = { [weak self] in self?.focusPath() }
+        breadcrumbControl.onOverflow = { [weak self] in self?.showPathOverflow() }
+        breadcrumbControl.setContentHuggingPriority(NSLayoutConstraint.Priority(1), for: .horizontal)
+        breadcrumbControl.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        breadcrumbControl.setAccessibilityLabel("Folder path")
+        let editPath = iconButton("pencil", tooltip: "Edit Path · ⌘L", action: #selector(editPathClicked))
+        pathPresentation.setContentHuggingPriority(NSLayoutConstraint.Priority(1), for: .horizontal)
+        pathPresentation.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        pathPresentation.orientation = .horizontal
+        pathPresentation.alignment = .centerY
+        pathPresentation.spacing = 2
+        pathPresentation.addArrangedSubview(breadcrumbControl)
+        pathPresentation.addArrangedSubview(editPath)
+        pathContent.addArrangedSubview(pathPresentation)
         pathContent.addArrangedSubview(pathField)
         pathContent.addArrangedSubview(searchField)
+        pathField.isHidden = true
         searchField.isHidden = true
         searchField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         searchWidth = searchField.widthAnchor.constraint(equalToConstant: 200)
@@ -305,6 +351,8 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
     override func viewDidLayout() {
         super.viewDidLayout()
         updateSearchLayout()
+        pathContent.layoutSubtreeIfNeeded()
+        updateBreadcrumbs()
         // The name column absorbs width changes; date and size remain readable in four-pane mode.
         if let name = table.tableColumns.first {
             let others = table.tableColumns.dropFirst().reduce(CGFloat(0)) { $0 + $1.width + 8 }
@@ -317,7 +365,8 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
     func navigate(to directory: URL) {
         guard directory.isFileURL else { return }
         let newURL = directory.standardizedFileURL
-        guard newURL != currentDirectory else { refresh(); return }
+        guard view.window?.makeFirstResponder(nil) != false else { return }
+        guard newURL.path != currentDirectory.path else { refresh(); return }
         backHistory.append(currentDirectory)
         forwardHistory.removeAll()
         changeDirectory(newURL)
@@ -343,6 +392,7 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
 
     func goBack() {
         activate()
+        guard view.window?.makeFirstResponder(nil) != false else { return }
         guard let previous = backHistory.popLast() else { return }
         forwardHistory.append(currentDirectory)
         changeDirectory(previous)
@@ -350,6 +400,7 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
 
     func goForward() {
         activate()
+        guard view.window?.makeFirstResponder(nil) != false else { return }
         guard let next = forwardHistory.popLast() else { return }
         backHistory.append(currentDirectory)
         changeDirectory(next)
@@ -362,9 +413,12 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
 
     func focusPath() {
         _ = view
+        guard view.window?.makeFirstResponder(nil) != false else { return }
         activate()
         guard closeSearch() else { return }
-        view.window?.makeFirstResponder(pathField)
+        pathEditing = true
+        pathField.stringValue = currentDirectory.path
+        updateSearchLayout()
         pathField.selectText(nil)
     }
 
@@ -397,7 +451,9 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
     private func updateSearchLayout() {
         guard searchButton != nil else { return }
         let sharesPath = searchExpanded && view.bounds.width >= 640
-        pathField.isHidden = searchExpanded && !sharesPath
+        let hidesPath = searchExpanded && !sharesPath
+        pathPresentation.isHidden = hidesPath || pathEditing
+        pathField.isHidden = hidesPath || !pathEditing
         searchField.isHidden = !searchExpanded
         searchWidth.isActive = sharesPath
         let symbol = searchExpanded ? "xmark" : "magnifyingglass"
@@ -521,7 +577,8 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
     private func updateDirectoryChrome() {
         folderLabel.stringValue = currentDirectory.path == "/" ? "Root" : currentDirectory.lastPathComponent
         folderLabel.toolTip = currentDirectory.path
-        pathField.stringValue = (currentDirectory.path as NSString).abbreviatingWithTildeInPath
+        if !pathEditing { pathField.stringValue = currentDirectory.path }
+        updateBreadcrumbs()
         pathField.toolTip = currentDirectory.path
         backButton?.isEnabled = !backHistory.isEmpty
         forwardButton?.isEnabled = !forwardHistory.isEmpty
@@ -597,14 +654,101 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
         guard let action = sender.representedObject as? String else { return }
         performAction(action)
     }
-    @objc private func pathSubmitted() {
+    @objc private func editPathClicked() { focusPath() }
+
+    @objc private func breadcrumbClicked() {
+        guard let item = breadcrumbControl.clickedPathItem else { return }
+        if let url = item.url {
+            activate()
+            navigate(to: url)
+        } else {
+            showPathOverflow()
+        }
+    }
+
+    private func showPathOverflow() {
+        let menu = NSMenu(title: "Parent Folders")
+        for url in overflowLocations {
+            let entry = NSMenuItem(title: url.lastPathComponent, action: #selector(overflowPathClicked(_:)), keyEquivalent: "")
+            entry.target = self
+            entry.representedObject = url
+            entry.toolTip = url.path
+            menu.addItem(entry)
+        }
+        // Return from the path control's accessibility action before tracking a menu.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.view.window?.isKeyWindow == true else { return }
+            menu.popUp(positioning: nil, at: NSPoint(x: 0, y: self.breadcrumbControl.bounds.maxY), in: self.breadcrumbControl)
+        }
+    }
+
+    @objc private func overflowPathClicked(_ sender: NSMenuItem) {
+        guard let url = sender.representedObject as? URL else { return }
         activate()
-        let input = pathField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !input.isEmpty else { updateDirectoryChrome(); return }
+        navigate(to: url)
+    }
+
+    private func updateBreadcrumbs() {
+        let width = breadcrumbControl.bounds.width
+        guard breadcrumbDirectory != currentDirectory.path || breadcrumbWidth != width else { return }
+        breadcrumbDirectory = currentDirectory.path
+        breadcrumbWidth = width
+        let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL
+        let insideHome = currentDirectory.path == home.path || currentDirectory.path.hasPrefix(home.path + "/")
+        let anchor = insideHome ? home : URL(fileURLWithPath: "/", isDirectory: true)
+        var locations = [currentDirectory]
+        while let first = locations.first, first.path != anchor.path {
+            locations.insert(first.deletingLastPathComponent(), at: 0)
+        }
+        let font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
+        func title(_ url: URL) -> String {
+            if url.path == home.path { return "~" }
+            return url.path == "/" ? "/" : url.lastPathComponent
+        }
+        func estimatedWidth(_ url: URL) -> CGFloat {
+            (title(url) as NSString).size(withAttributes: [.font: font]).width + 36
+        }
+        var visible = locations
+        overflowLocations = []
+        var total = visible.reduce(CGFloat(0)) { $0 + estimatedWidth($1) }
+        while total + (overflowLocations.isEmpty ? 0 : 30) > width && visible.count > 2 {
+            let removed = visible.remove(at: 1)
+            overflowLocations.append(removed)
+            total -= estimatedWidth(removed)
+        }
+        breadcrumbControl.url = currentDirectory
+        let nativeItems = breadcrumbControl.pathItems
+        var items = visible.compactMap { url -> NSPathControlItem? in
+            guard let item = nativeItems.first(where: { $0.url?.path == url.path }) else { return nil }
+            item.title = title(url)
+            item.image = NSImage(systemSymbolName: url.path == home.path ? "house" : "folder", accessibilityDescription: nil)
+            return item
+        }
+        if !overflowLocations.isEmpty {
+            let more = NSPathControlItem()
+            more.title = "…"
+            items.insert(more, at: 1)
+        }
+        breadcrumbControl.pathItems = items
+        breadcrumbControl.toolTip = currentDirectory.path
+    }
+
+    @objc private func pathSubmitted() {
+        let input = pathField.stringValue
+        guard !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            statusLabel.stringValue = "Enter a folder path."
+            NSSound.beep()
+            return
+        }
         let expanded = (input as NSString).expandingTildeInPath
-        let target: URL
-        if expanded.hasPrefix("/") { target = URL(fileURLWithPath: expanded, isDirectory: true) }
-        else { target = currentDirectory.appendingPathComponent(expanded, isDirectory: true) }
+        let target = expanded.hasPrefix("/") ? URL(fileURLWithPath: expanded, isDirectory: true) : currentDirectory.appendingPathComponent(expanded, isDirectory: true)
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: target.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+            statusLabel.stringValue = "Folder not found or inaccessible. Edit the path to try again."
+            NSSound.beep()
+            return
+        }
+        activate()
         navigate(to: target)
         view.window?.makeFirstResponder(table)
     }
@@ -640,6 +784,16 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
     }
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        if control === pathField {
+            if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
+                view.window?.makeFirstResponder(table)
+                return true
+            }
+            if commandSelector == #selector(NSResponder.insertNewline(_:)) {
+                pathSubmitted()
+                return true
+            }
+        }
         if control === searchField, commandSelector == #selector(NSResponder.cancelOperation(_:)) {
             return closeSearch()
         }
@@ -657,6 +811,13 @@ final class FilePane: NSViewController, NSTableViewDataSource, NSTableViewDelega
     }
 
     func controlTextDidEndEditing(_ obj: Notification) {
+        if let field = obj.object as? NSTextField, field === pathField {
+            pathEditing = false
+            pathField.stringValue = currentDirectory.path
+            updateSearchLayout()
+            updateStatus()
+            return
+        }
         guard let field = obj.object as? NSTextField, field === inlineField, let url = inlineURL else { return }
         field.stringValue = url.lastPathComponent
         field.isEditable = false

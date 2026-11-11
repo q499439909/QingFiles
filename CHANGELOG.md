@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add clickable breadcrumb paths, an overflow menu for omitted ancestors, and full absolute-path editing with initial selection, Return navigation, and Escape/blur cancellation.
+
 - Compact local pane headers by removing visible positional labels, retaining a blue active-folder title, and placing navigation controls beside the path.
 - Reveal current-folder search on demand with a button or Command-F, adapt it to narrow/wide panes, and reset it on Escape or folder changes.
 

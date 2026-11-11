@@ -26,6 +26,14 @@ Each pane shows its folder title above a single navigation row. Back, Forward, P
 
 Click the search button or press `⌘F` to expand and focus the current-folder name filter. Wide panes show the path and search together. In narrow panes, search temporarily occupies the path area. Moving focus elsewhere keeps the filter visible. The search field's clear button restores the full list and keeps search expanded. Escape or the Close Search button clears and collapses it. Changing folders also clears and collapses search. `⌘L` clears and collapses search before focusing the path field, avoiding a hidden active filter while editing a path.
 
+## Breadcrumb paths and full-path editing
+
+Click a directory segment in the path bar to navigate directly to it. Home appears as `~` and the filesystem root as `/`. When the path is too long, a `…` menu lists omitted ancestor folders. Hover the bar to see the complete absolute path.
+
+Click unused space in the path bar, the pencil button, or press `⌘L` to edit the full absolute path with all text selected. Copy it with `⌘C`, paste another path, or click again to position the cursor for a partial edit. Return navigates, accepting absolute paths, `~`, and paths relative to the current folder. The original spelling of symbolic-link paths is preserved. Missing paths and file paths keep the editor open and show feedback in the pane footer.
+
+Escape cancels input and restores breadcrumbs. Clicking elsewhere also discards unsubmitted path input. Navigation requires Return. Each pane retains its own location and history. Opening path editing clears and collapses search, while opening search ends path editing.
+
 ## Create a blank document
 
 Right-click in a local pane and choose **New**, then Folder, Word Document (`.docx`), Excel Workbook (`.xlsx`), PowerPoint Presentation (`.pptx`), PDF Document (`.pdf`), Text Document (`.txt`), or Markdown Document (`.md`). The item is created in that pane's displayed folder, including when you right-click an existing item. Existing names receive a numbered suffix such as `New Word Document (2).docx`.
