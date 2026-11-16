@@ -1,0 +1,248 @@
+{
+  "capture_type": "native AppKit state-by-state walkthrough; not continuous desktop recordings",
+  "fixture": "/tmp/QingFiles-PR-Demo",
+  "platform": "macOS 15.6 arm64",
+  "prs": {
+    "3": {
+      "head": "78654dc",
+      "gif": "pr3-walkthrough.gif",
+      "steps": [
+        {
+          "image": "pr3-before-create.png",
+          "caption": "Create a blank document in the current folder"
+        },
+        {
+          "image": "pr3-inline-new-document.png",
+          "caption": "New Word document: inline naming starts"
+        },
+        {
+          "image": "pr3-naming.png",
+          "caption": "Enter a name for the new document"
+        },
+        {
+          "image": "pr3-created.png",
+          "caption": "Commit: Project Brief.docx stays selected"
+        }
+      ]
+    },
+    "5": {
+      "head": "ac44cea",
+      "gif": "pr5-walkthrough.gif",
+      "steps": [
+        {
+          "image": "pr5-compact-header.png",
+          "caption": "Compact navigation, path, and search button"
+        },
+        {
+          "image": "pr5-search-expanded.png",
+          "caption": "Expand search on demand"
+        },
+        {
+          "image": "pr5-search-filtered.png",
+          "caption": "Filter names in the current folder"
+        },
+        {
+          "image": "pr5-search-collapsed.png",
+          "caption": "Clear the filter and collapse search"
+        }
+      ]
+    },
+    "7": {
+      "head": "e89c162",
+      "gif": "pr7-walkthrough.gif",
+      "steps": [
+        {
+          "image": "pr7-breadcrumbs.png",
+          "caption": "Breadcrumbs represent the folder hierarchy"
+        },
+        {
+          "image": "pr7-full-path.png",
+          "caption": "Select the full path for copying or editing"
+        },
+        {
+          "image": "pr7-path-input.png",
+          "caption": "Edit the full-path text"
+        },
+        {
+          "image": "pr7-breadcrumbs.png",
+          "caption": "Leave path editing: restore breadcrumbs"
+        },
+        {
+          "image": "pr7-parent-navigation.png",
+          "caption": "Click Projects: navigate to the parent folder"
+        }
+      ]
+    },
+    "9": {
+      "head": "ee2522e",
+      "gif": "pr9-walkthrough.gif",
+      "steps": [
+        {
+          "image": "pr9-before-reveal.png",
+          "caption": "Start in the local workspace"
+        },
+        {
+          "image": "pr9-revealed-file.png",
+          "caption": "Open a document with QingFiles: reveal its original file"
+        },
+        {
+          "image": "pr9-settings.png",
+          "caption": "Optional WeChat integration: current setting shown"
+        }
+      ]
+    },
+    "11": {
+      "head": "d945ab7",
+      "gif": "pr11-walkthrough.gif",
+      "steps": [
+        {
+          "image": "pr11-before-rename.png",
+          "caption": "An existing file in the current folder"
+        },
+        {
+          "image": "pr11-stem-selected.png",
+          "caption": "Inline rename: select only the filename stem"
+        },
+        {
+          "image": "pr11-edited-name.png",
+          "caption": "Replace the stem; keep .txt visible"
+        },
+        {
+          "image": "pr11-renamed.png",
+          "caption": "Commit: retain selection after sorting"
+        },
+        {
+          "image": "pr11-reenter.png",
+          "caption": "Enter inline editing again"
+        },
+        {
+          "image": "pr11-cancel-draft.png",
+          "caption": "Enter an alternative name"
+        },
+        {
+          "image": "pr11-cancelled.png",
+          "caption": "Cancel: retain Renamed Notes.txt"
+        }
+      ]
+    }
+  },
+  "files": {
+    "CAPTURE_NOTES.md": {
+      "bytes": 3066,
+      "sha256": "472728f3cffe7a3ca993e9f373dabe1c7a4d5e8b6bed191fb88f6b2764f96a1d"
+    },
+    "pr11-before-rename.png": {
+      "bytes": 385818,
+      "sha256": "c6e2e9ec66c06fa2e394b3e0fc53cbdeb0328b416291345ca835c89453bfdba4"
+    },
+    "pr11-cancel-draft.png": {
+      "bytes": 384044,
+      "sha256": "992a299c7fe2508e0d8ce322b65bbcc280b455e125137383fd5380e1c861307f"
+    },
+    "pr11-cancelled.png": {
+      "bytes": 384346,
+      "sha256": "e28410c3a54851e4821bdbdcc6b3d486a15cf37371f1a70b92f6789bda8c9bf7"
+    },
+    "pr11-edited-name.png": {
+      "bytes": 383787,
+      "sha256": "4e71df1d665d95422ad7dea112b433bedcbc0ad8c7db28d8d41230c4050fffcb"
+    },
+    "pr11-reenter.png": {
+      "bytes": 384609,
+      "sha256": "28fcf0466e6f456731dc68f06dc3e053a15631fa948ed6734624ccc3beec277a"
+    },
+    "pr11-renamed.png": {
+      "bytes": 384346,
+      "sha256": "e28410c3a54851e4821bdbdcc6b3d486a15cf37371f1a70b92f6789bda8c9bf7"
+    },
+    "pr11-stem-selected.png": {
+      "bytes": 383137,
+      "sha256": "836646f7c5cf923a1982f037d8fd9e75f6c48593d38a7fa23a8e26b7f765355d"
+    },
+    "pr11-walkthrough.gif": {
+      "bytes": 337173,
+      "sha256": "9b12b29c1f6b6d2f71cd0312ae79f69caa28f6fa825e9c13a491df31e70927c4"
+    },
+    "pr3-before-create.png": {
+      "bytes": 396645,
+      "sha256": "003b0464cf1b21126cce6eaaa21afa473a5685a7def4454ea125623f455d6794"
+    },
+    "pr3-created.png": {
+      "bytes": 402907,
+      "sha256": "0d60e4e1577675270f2395e8ce58340e1a715c9da9304fcb518a412575c52c55"
+    },
+    "pr3-inline-new-document.png": {
+      "bytes": 402253,
+      "sha256": "8f735ecbe10fbf40aa583c27948b9c8e09aa7bae0a130a471ee4ea218d506d89"
+    },
+    "pr3-naming.png": {
+      "bytes": 401979,
+      "sha256": "f389734716951a7638e17373088718c376079df6d764a4eec104087ef84a02f5"
+    },
+    "pr3-walkthrough.gif": {
+      "bytes": 225152,
+      "sha256": "d6997ac5206066a31280ca3ba112a2d6e47b3988583345dc71cbbe07fe21e350"
+    },
+    "pr5-compact-header.png": {
+      "bytes": 389828,
+      "sha256": "fa4d27d402677846ad321ad3af79958188326ef904a1b98c025ed908c77b2788"
+    },
+    "pr5-four-panes.png": {
+      "bytes": 432827,
+      "sha256": "e549a32a8302d19511917380bb7ed1afd87118211afd6e65a77537dcb24e399d"
+    },
+    "pr5-search-collapsed.png": {
+      "bytes": 383176,
+      "sha256": "49c0336a44ba8921e307695aaad6004168c27583674cbd35263aa74ad3bbccab"
+    },
+    "pr5-search-expanded.png": {
+      "bytes": 386576,
+      "sha256": "becf656aa41760d1fbd4a123b0bb8a2a5a333ebfb022f5abd1f94a89a648a237"
+    },
+    "pr5-search-filtered.png": {
+      "bytes": 348266,
+      "sha256": "3870133efff62d95033f50b91570845cf7c235efca9570cdb4b3345ae75f355e"
+    },
+    "pr5-walkthrough.gif": {
+      "bytes": 163901,
+      "sha256": "c8fd3328ce760c75b9a522bd783f001db43f710fc9d66f2285a8f311e466ada2"
+    },
+    "pr7-breadcrumbs.png": {
+      "bytes": 340773,
+      "sha256": "574bb5f561b3d17a900f1332d451d08a375de3c8ac0b69d005740e2a336aceb6"
+    },
+    "pr7-full-path.png": {
+      "bytes": 346751,
+      "sha256": "486e218720b585f914f8934264f73de493b5e2b010a531612c2f7e2220425019"
+    },
+    "pr7-parent-navigation.png": {
+      "bytes": 345454,
+      "sha256": "b33bba552087d89492ec7ec54f91aa2c5d437a9da9db9675516de536e502df10"
+    },
+    "pr7-path-input.png": {
+      "bytes": 346183,
+      "sha256": "93a6e5006db7affe911d41751ca084d6985425c9b891e60aff9f711c0a4aac0a"
+    },
+    "pr7-walkthrough.gif": {
+      "bytes": 143944,
+      "sha256": "7afa515cc1de5e65a4853ccabb2f1344690d3a5384eef0cb69226f125df67d14"
+    },
+    "pr9-before-reveal.png": {
+      "bytes": 385712,
+      "sha256": "5a8c27b88e2cc38e94c2f5bd1ea2a56f2f9c3ecdadb05a5ac93c930597726623"
+    },
+    "pr9-revealed-file.png": {
+      "bytes": 342640,
+      "sha256": "068f8432e4e3a6cca44c90ae02616766c79c738f501fbbf92bc449ceebe785e3"
+    },
+    "pr9-settings.png": {
+      "bytes": 37557,
+      "sha256": "476454967d220e1b0d362b055da08f127308c3f30267e9620b34100a032d2236"
+    },
+    "pr9-walkthrough.gif": {
+      "bytes": 140685,
+      "sha256": "dd0823097b0d96fe2f07226b1a56e71331eaf80be67eb02e70c81367878a0a61"
+    }
+  },
+  "notes": "CAPTURE_NOTES.md"
+}
